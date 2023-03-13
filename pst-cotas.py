@@ -2,28 +2,7 @@ import requests
 import datetime
 import json
 import math
-
-
-# Calculates distance between coordinates along the Earth's surface
-
-EARTH_RADIUS_KM = 6357
-
-def coords_distance_km(lat_1_deg, lng_1_deg, lat_2_deg, lng_2_deg):
-
-    lng_1, lat_1, lng_2, lat_2 = map(math.radians, [lat_1_deg, lng_1_deg, lat_2_deg, lng_2_deg])
-
-    d_lat = lat_2 - lat_1
-    d_lng = lng_2 - lng_1
-
-    temp = (
-         math.sin(d_lat / 2) ** 2
-       + math.cos(lat_1)
-       * math.cos(lat_2)
-       * math.sin(d_lng / 2) ** 2
-    )
-
-    return EARTH_RADIUS_KM * (2 * math.atan2(math.sqrt(temp), math.sqrt(1 - temp)))
-
+import haversine
 
 
 # Google API key
@@ -84,8 +63,43 @@ elevation_status = response["status"]
 if elevation_status != "OK":
     print(f"WARNING: API returned ElevationStatus \"{elevation_status}\" instead of \"OK\", carefully check your results!")
 
+# Extract elevation results
+results = response["results"]
+
 # Save original results to file
-file = open(f"elevation_responses_{datetime.datetime.now().isoformat()}.json", "w")
-file.write(json.dumps(response["results"]))
+file = open(f"original_elevation_samples_{datetime.datetime.now().isoformat()}.json", "w")
+file.write(json.dumps(results))
 
+# Convert to target format (distance, elevation)
+elevation_samples = []
 
+# Add first point
+elevation_samples.append((0, results[0]["elevation"]))
+
+# Calculate distances
+
+for i, result in enumerate(results[1:], 1):
+
+    previous_location = results[i - 1]["location"]
+    previous_lat = previous_location["lat"]
+    previous_lng = previous_location["lng"]
+    
+    previous_distance = elevation_samples[i - 1][0]
+
+    location = result["location"]
+    lat = location["lat"]
+    lng = location["lng"]
+
+    distance = previous_distance + haversine.Haversine((previous_lat, previous_lng), (lat, lng)).km
+    elevation = result["elevation"]
+
+    elevation_samples.append((distance, elevation))
+
+# Write out results
+
+file = open(f"elevation_samples_{datetime.datetime.now().isoformat()}.txt", "w")
+
+for sample in elevation_samples:
+    file.write(f"{sample[0]} {sample[1]}\n")
+
+file.close()
