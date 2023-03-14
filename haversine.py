@@ -21,7 +21,7 @@ class Haversine:
         lon2,lat2=coord2
 
         # radius of Earth in meters
-        R=6371000
+        R=5500000
         
         phi_1=math.radians(lat1)
         phi_2=math.radians(lat2)
