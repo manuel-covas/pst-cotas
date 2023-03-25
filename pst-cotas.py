@@ -67,7 +67,7 @@ if elevation_status != "OK":
 results = response["results"]
 
 # Save original results to file
-file = open(f"original_elevation_samples_{datetime.datetime.now().isoformat().replace(":", "-")}.json", "w")
+file = open(f'original_elevation_samples_{datetime.datetime.now().isoformat().replace(":", "-")}.json', "w")
 file.write(json.dumps(results))
 
 # Convert to target format (distance, elevation)
@@ -97,7 +97,7 @@ for i, result in enumerate(results[1:], 1):
 
 # Write out results
 
-file = open(f"elevation_samples_{datetime.datetime.now().isoformat().replace(":", "-")}.txt", "w")
+file = open(f'elevation_samples_{datetime.datetime.now().isoformat().replace(":", "-")}.txt', "w")
 
 for sample in elevation_samples:
     file.write(f"{sample[0]} {sample[1]}\n")
